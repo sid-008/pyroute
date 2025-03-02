@@ -29,12 +29,13 @@ def send():
 def recv():
     sock = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_ICMP)
     sock.setsockopt(socket.SOL_IP, socket.IP_HDRINCL, 1)
+    sock.settimeout(3)
     while 1:
         # TODO: check if timeout implementation is correct
         try:
             start_time = time.time()
             data, addr = sock.recvfrom(1508)  # Apparently 1500 is MTU for ICMP
-            rtt = time.time() - start_time
+            rtt = time.time() - start_time  # time perf TODO
             try:
                 print("Response from:", addr[0],
                       socket.gethostbyaddr(addr[0])[0], rtt.__round__(2))
