@@ -1,5 +1,6 @@
 # import sys
 import socket
+import time
 
 # TODO: implement proper cli arg input and other options
 # url = sys.argv[1]
@@ -24,18 +25,26 @@ def send():
 
 
 # TODO: implement latency monitoring between hops
+# TODO: Handle case of no response from host
 def recv():
     sock = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_ICMP)
     sock.setsockopt(socket.SOL_IP, socket.IP_HDRINCL, 1)
     while 1:
-        data, addr = sock.recvfrom(1508)  # Apparently 1500 is MTU for ICMP
+        # TODO: check if timeout implementation is correct
         try:
-            print("Response from:", addr[0], socket.gethostbyaddr(addr[0])[0])
-        except socket.herror:
-            print("Response from:", addr[0])
+            start_time = time.time()
+            data, addr = sock.recvfrom(1508)  # Apparently 1500 is MTU for ICMP
+            rtt = time.time() - start_time
+            try:
+                print("Response from:", addr[0],
+                      socket.gethostbyaddr(addr[0])[0], rtt.__round__(2))
+            except socket.herror:
+                print("Response from:", addr[0])
 
-        if (addr[0] == "8.8.8.8"):  # TODO: change hardcoding
-            break
+            if (addr[0] == "8.8.8.8"):  # TODO: change hardcoding
+                break
+        except socket.timeout:
+            print("* * *")
 
     sock.close()
 
